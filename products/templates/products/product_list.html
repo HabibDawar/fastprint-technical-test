@@ -1,0 +1,103 @@
+{% extends 'products/base.html' %}
+{% load humanize %}
+
+{% block content %}
+<div class="row mb-4 align-items-center">
+    <div class="col-md-6">
+        <h1 class="h3 fw-bold text-gray-800">Product Management</h1>
+        <p class="text-muted">Manage your inventory and stock status</p>
+    </div>
+    <div class="col-md-6 text-md-end">
+        <div class="btn-group" role="group">
+            <a href="?status=bisa_dijual"
+               class="btn {% if show_only_sellable %}btn-success text-white{% else %}btn-outline-success{% endif %}">
+                {% if show_only_sellable %}
+                ✓ Sellable Only
+                {% else %}
+                Show Sellable Only
+                {% endif %}
+            </a>
+
+            {% if show_only_sellable %}
+            <a href="{% url 'product-list' %}" class="btn btn-outline-secondary">
+                Clear Filter
+            </a>
+            {% endif %}
+        </div>
+
+        <a href="{% url 'product-create' %}" class="btn btn-primary ms-2">
+            + Add Product
+        </a>
+    </div>
+</div>
+
+<div class="card table-container">
+    <div class="table-responsive">
+        <table class="table table-hover mb-0">
+            <thead>
+                <tr>
+                    <th class="ps-4">Product Name</th>
+                    <th>Category</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th class="text-end pe-4">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td class="ps-4">
+                        <div class="fw-bold">{{ product.nama_produk }}</div>
+                        <small class="text-muted">ID: {{ product.id }}</small>
+                    </td>
+
+                    <td>{{ product.kategori.nama_kategori|default:"-" }}</td>
+
+                    <td class="fw-bold text-primary">
+                        Rp {{ product.harga|intcomma }}
+                    </td>
+
+                    <td>
+                        <span class="badge 
+                            {% if product.status.nama_status|lower == 'bisa dijual' %}
+                                bg-success
+                            {% else %}
+                                bg-secondary
+                            {% endif %}
+                        ">
+                            {{ product.status.nama_status }}
+                        </span>
+                    </td>
+
+                    <td class="text-end pe-4">
+                        <a href="{% url 'product-edit' product.pk %}"
+                           class="btn btn-sm btn-outline-primary me-1">
+                            Edit
+                        </a>
+
+                        <form action="{% url 'product-delete' product.pk %}"
+                              method="post"
+                              class="d-inline"
+                              onsubmit="return confirm('Delete {{ product.nama_produk }}?');">
+                            {% csrf_token %}
+                            <button class="btn btn-sm btn-outline-danger">
+                                Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-5 text-muted">
+                        No products found.<br>
+                        <small>
+                            Run <code>python manage.py sync_products auto</code>
+                        </small>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
